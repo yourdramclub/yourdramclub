@@ -40,7 +40,10 @@ export default function Home() {
   };
 
   const DramaCard = ({ drama, type }: { drama: any; type: string }) => (
-    <div className="bg-gray-800 rounded-xl overflow-hidden hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer group">
+    <a
+  href={`/drama/${drama.id}`}
+  className="bg-gray-800 rounded-xl overflow-hidden hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer group block"
+>
       {drama.poster_path ? (
         <img src={`${IMG_URL}${drama.poster_path}`} alt={drama.name} className="w-full h-64 object-cover group-hover:opacity-90 transition" />
       ) : (
@@ -55,7 +58,7 @@ export default function Home() {
           <span className="text-xs text-gray-400">⭐ {drama.vote_average?.toFixed(1)}</span>
         </div>
       </div>
-    </div>
+    </a>
   );
 
   const SkeletonCard = () => (
@@ -113,7 +116,9 @@ export default function Home() {
       <section id="kdrama" className="px-8 py-10">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-bold">🔥 Trending KDramas</h3>
-          <span className="text-red-400 text-sm cursor-pointer hover:text-red-300">View all →</span>
+          <a href="/KDrama" className="text-red-400 text-sm hover:text-red-300">
+  View all →
+</a>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
           {kdramas.length > 0 ? kdramas.map(drama => <DramaCard key={drama.id} drama={drama} type="kdrama" />) :
@@ -125,7 +130,9 @@ export default function Home() {
       <section id="cdrama" className="px-8 py-10">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-bold">🇨🇳 Popular CDramas</h3>
-          <span className="text-yellow-400 text-sm cursor-pointer hover:text-yellow-300">View all →</span>
+          <a href="/Cdrama" className="text-yellow-400 text-sm hover:text-yellow-300">
+  View all →
+</a>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
           {cdramas.length > 0 ? cdramas.map(drama => <DramaCard key={drama.id} drama={drama} type="cdrama" />) :
