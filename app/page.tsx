@@ -29,14 +29,10 @@ export default function Home() {
     fetchCDramas().then(setCdramas);
   }, []);
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!search.trim()) return;
-    setSearching(true);
-    const res = await fetch(`${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(search)}`);
-    const data = await res.json();
-    setSearchResults(data.results?.slice(0, 8) || []);
-    setSearching(false);
+    window.location.href = `/search?q=${encodeURIComponent(search)}`;
   };
 
   const DramaCard = ({ drama, type }: { drama: any; type: string }) => (
