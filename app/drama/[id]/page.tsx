@@ -17,7 +17,10 @@ export default function DramaDetailPage() {
     // Drama Details
     fetch(`https://api.themoviedb.org/3/tv/${dramaId}?api_key=${API_KEY}`)
       .then((res) => res.json())
-      .then((data) => setDrama(data));
+      .then((data) => {
+        setDrama(data);
+        document.title = `${data.name || 'Drama'} - Cast, Rating & Trailer | YourDramaClub`;
+      });
 
     // Trailer
     fetch(`https://api.themoviedb.org/3/tv/${dramaId}/videos?api_key=${API_KEY}`)

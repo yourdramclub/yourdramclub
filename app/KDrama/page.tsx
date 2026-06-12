@@ -11,6 +11,7 @@ export default function KDramaPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = "All KDramas - Browse Korean Dramas | YourDramaClub";
     setLoading(true);
     fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=KR&sort_by=popularity.desc&page=${page}`)
       .then(r => r.json())
