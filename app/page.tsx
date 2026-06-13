@@ -122,6 +122,7 @@ export default function Home() {
           <a href="/Cdrama" className="hover:text-red-500 transition">CDrama</a>
           <a href="#kdrama" className="hover:text-red-500 transition">Actors</a>
           <a href="/search?q=" className="hover:text-red-500 transition">Search</a>
+          <a href="/blog" className="hover:text-red-500 transition">Blog</a>
         </div>
         <button className="bg-red-500 hover:bg-red-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white transition">Sign In</button>
       </nav>
