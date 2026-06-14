@@ -15,6 +15,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState("All");
 const [filteredKdramas, setFilteredKdramas] = useState<any[]>([]);
 const [filteredCdramas, setFilteredCdramas] = useState<any[]>([]);
+const [comingSoon, setComingSoon] = useState<any[]>([]);
 
   const filters = ["All", "Romance", "Action", "Thriller", "Fantasy", "Comedy"];
 const genreMap: Record<string, number> = {
@@ -52,6 +53,18 @@ useEffect(() => {
     fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=CN&sort_by=popularity.desc&page=1`)
       .then(r => r.json())
       .then(data => setCdramas((data.results || []).slice(0, 10)));
+
+    // Fetch Coming Soon
+    const today = new Date().toISOString().split('T')[0];
+Promise.all([
+  fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=KR&sort_by=first_air_date.asc&first_air_date.gte=${today}&page=1`).then(r => r.json()),
+  fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=CN&sort_by=first_air_date.asc&first_air_date.gte=${today}&page=1`).then(r => r.json()),
+]).then(([krData, cnData]) => {
+  const combined = [...(krData.results || []), ...(cnData.results || [])]
+    .filter((d: any) => d.poster_path)
+    .sort((a: any, b: any) => new Date(a.first_air_date).getTime() - new Date(b.first_air_date).getTime());
+  setComingSoon(combined.slice(0, 40));
+});
 
     // Fetch actors
     Promise.all([
@@ -210,6 +223,33 @@ useEffect(() => {
                 <img src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`} alt={actor.name}
                   className="w-14 h-14 sm:w-18 sm:h-18 rounded-full object-cover border-2 border-amber-100" />
                 <p className="text-[10px] sm:text-xs text-center mt-1 text-gray-700 truncate w-full">{actor.name}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Coming Soon */}
+      {comingSoon.length > 0 && (
+        <section className="py-5">
+          <div className="flex items-center justify-between px-4 sm:px-8 mb-3">
+            <h3 className="text-base sm:text-xl font-bold">🗓️ Coming Soon</h3>
+            <a href="/coming-soon" className="text-red-500 text-xs sm:text-sm font-medium">View all →</a>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide px-4 sm:px-8">
+            {comingSoon.map(drama => (
+              <a key={drama.id} href={`/drama/${drama.id}`}
+                className="flex-shrink-0 w-32 sm:w-40 block">
+                <div className="relative">
+                  <img src={`${IMG_URL}${drama.poster_path}`} alt={drama.name}
+                    className="w-full aspect-[2/3] object-cover rounded-xl" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 rounded-b-xl px-2 py-1.5">
+                    <p className="text-white text-[10px] font-semibold">
+                      📅 {new Date(drama.first_air_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-xs font-medium mt-1.5 text-gray-800 truncate">{drama.name}</p>
               </a>
             ))}
           </div>
