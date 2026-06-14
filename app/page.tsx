@@ -13,9 +13,31 @@ export default function Home() {
   const [cnActors, setCnActors] = useState<any[]>([]);
   const [featured, setFeatured] = useState<any>(null);
   const [activeFilter, setActiveFilter] = useState("All");
+const [filteredKdramas, setFilteredKdramas] = useState<any[]>([]);
+const [filteredCdramas, setFilteredCdramas] = useState<any[]>([]);
 
   const filters = ["All", "Romance", "Action", "Thriller", "Fantasy", "Comedy"];
-
+const genreMap: Record<string, number> = {
+  "Romance": 10749,
+  "Action": 10759,
+  "Thriller": 9648,
+  "Fantasy": 10765,
+  "Comedy": 35,
+};
+useEffect(() => {
+  if (activeFilter === "All") {
+    setFilteredKdramas(kdramas);
+    setFilteredCdramas(cdramas);
+    return;
+  }
+  const genreId = genreMap[activeFilter];
+  fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=KR&with_genres=${genreId}&sort_by=popularity.desc`)
+    .then(r => r.json())
+    .then(data => setFilteredKdramas((data.results || []).slice(0, 10)));
+  fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=CN&with_genres=${genreId}&sort_by=popularity.desc`)
+    .then(r => r.json())
+    .then(data => setFilteredCdramas((data.results || []).slice(0, 10)));
+}, [activeFilter, kdramas, cdramas]);
   useEffect(() => {
     // Fetch KDramas
     fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=KR&sort_by=popularity.desc&page=1`)
@@ -146,7 +168,7 @@ export default function Home() {
           <h3 className="text-base sm:text-xl font-bold">🔥 Trending KDramas</h3>
           <a href="/KDrama" className="text-red-500 text-xs sm:text-sm font-medium">View all →</a>
         </div>
-        <DramaRow dramas={kdramas} type="kdrama" />
+        <DramaRow dramas={filteredKdramas} type="kdrama" />
       </section>
 
       {/* KDrama Celebrities */}
@@ -173,7 +195,7 @@ export default function Home() {
           <h3 className="text-base sm:text-xl font-bold">🇨🇳 Popular CDramas</h3>
           <a href="/Cdrama" className="text-amber-500 text-xs sm:text-sm font-medium">View all →</a>
         </div>
-        <DramaRow dramas={cdramas} type="cdrama" />
+        <DramaRow dramas={filteredCdramas} type="cdrama" />
       </section>
 
       {/* CDrama Celebrities */}
