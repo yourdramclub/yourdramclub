@@ -41,7 +41,7 @@ useEffect(() => {
 }, [activeFilter, kdramas, cdramas]);
   useEffect(() => {
     // Fetch KDramas
-    fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=KR&sort_by=popularity.desc&page=1`)
+    fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=KR&sort_by=popularity.desc&page=1&with_original_language=ko&without_genres=16&vote_count.gte=10`)
       .then(r => r.json())
       .then(data => {
         const results = data.results || [];
@@ -50,7 +50,7 @@ useEffect(() => {
       });
 
     // Fetch CDramas
-    fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=CN&sort_by=popularity.desc&page=1`)
+    fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=CN&sort_by=popularity.desc&page=1&with_original_language=zh&without_genres=16,10762&vote_count.gte=10`)
       .then(r => r.json())
       .then(data => setCdramas((data.results || []).slice(0, 10)));
 
