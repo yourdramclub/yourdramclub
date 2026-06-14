@@ -23,7 +23,7 @@ export default function BlogPage() {
         <p className="text-gray-500 text-sm sm:text-lg mb-10">Recommendations, guides, and articles for drama lovers</p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {blogPosts.map(post => (
+          {blogPosts.map((post: any) => (
             <a key={post.slug} href={`/blog/${post.slug}`}
               className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 block">
               <img src={post.image} alt={post.title} className="w-full h-48 object-cover" />
@@ -38,7 +38,7 @@ export default function BlogPage() {
       </div>
 
       <footer className="px-4 sm:px-8 py-8 border-t border-gray-200 text-center text-gray-400 text-xs sm:text-sm">
-        © 2025 YourDramaClub · Built with ❤️ for drama lovers
+        © 2025 YourDramaClub · Built with ❤️ for k&c drama loverss
       </footer>
     </main>
   );
