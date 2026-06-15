@@ -50,14 +50,21 @@ export default function DramaDetailPage() {
       .then(res => res.json())
       .then(data => setCast((data.cast || []).filter((c: any) => c.profile_path).slice(0, 10)));
 
-    // Similar — filtered to Asian dramas only
-    fetch(`${BASE_URL}/tv/${dramaId}/similar?api_key=${API_KEY}`)
+    // Similar — same country and genre
+    fetch(`${BASE_URL}/tv/${dramaId}?api_key=${API_KEY}`)
       .then(res => res.json())
-      .then(data => {
-        const filtered = (data.results || [])
-          .filter((s: any) => s.poster_path && s.origin_country?.some((c: string) => ["KR", "CN", "JP", "TH", "TW"].includes(c)))
-          .slice(0, 10);
-        setSimilar(filtered);
+      .then(dramaInfo => {
+        const country = dramaInfo.origin_country?.[0] || "KR";
+        const genreIds = dramaInfo.genres?.map((g: any) => g.id).slice(0, 2).join(",") || "";
+        const lang = country === "KR" ? "ko" : country === "CN" ? "zh" : "ko";
+        fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=${country}&with_original_language=${lang}&with_genres=${genreIds}&sort_by=popularity.desc&without_genres=16&vote_count.gte=10`)
+          .then(r => r.json())
+          .then(data => {
+            const filtered = (data.results || [])
+              .filter((s: any) => s.poster_path && s.id !== parseInt(dramaId))
+              .slice(0, 10);
+            setSimilar(filtered);
+          });
       });
   }, []);
 
