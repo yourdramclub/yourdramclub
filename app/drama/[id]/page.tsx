@@ -11,6 +11,7 @@ export default function DramaDetailPage() {
   const [similar, setSimilar] = useState<any[]>([]);
   const [cast, setCast] = useState<any[]>([]);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [providers, setProviders] = useState<any[]>([]);
 
   useEffect(() => {
     const pathParts = window.location.pathname.split("/");
@@ -32,6 +33,16 @@ export default function DramaDetailPage() {
           (v: any) => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser")
         );
         if (video) setTrailer(`https://www.youtube.com/embed/${video.key}`);
+      });
+
+    // Providers
+    fetch(`${BASE_URL}/tv/${dramaId}/watch/providers?api_key=${API_KEY}`)
+      .then(res => res.json())
+      .then(data => {
+        const regionData = data?.results?.US || data?.results?.GB || 
+          data?.results?.KR || data?.results?.IN || 
+          Object.values(data?.results || {})[0] || null;
+        setProviders((regionData as any)?.flatrate || []);
       });
 
     // Cast
@@ -161,6 +172,10 @@ export default function DramaDetailPage() {
                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition">
                 MyDramaList
               </a>
+              <a href={`/blog/drama/${drama.id}`}
+                className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-semibold transition">
+                📝 Watch Guide
+              </a>
             </div>
           </div>
         </div>
@@ -176,20 +191,49 @@ export default function DramaDetailPage() {
         {/* Where to Watch */}
         <div className="mt-4 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <h2 className="font-bold text-lg mb-3">📺 Where to Watch</h2>
-          <div className="flex flex-wrap gap-3">
-            {[
-              { name: "Netflix", color: "bg-red-600", url: `https://www.netflix.com/search?q=${encodeURIComponent(drama.name)}` },
-              { name: "Viki", color: "bg-blue-600", url: `https://www.viki.com/search?q=${encodeURIComponent(drama.name)}` },
-              { name: "WeTV", color: "bg-green-600", url: `https://wetv.vip/search?query=${encodeURIComponent(drama.name)}` },
-              { name: "iQIYI", color: "bg-green-700", url: `https://www.iq.com/search/${encodeURIComponent(drama.name)}` },
-              { name: "Viu", color: "bg-yellow-500", url: `https://www.viu.com/search?q=${encodeURIComponent(drama.name)}` },
-            ].map(platform => (
-              <a key={platform.name} href={platform.url} target="_blank" rel="noopener noreferrer"
-                className={`${platform.color} text-white px-4 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition`}>
-                {platform.name}
-              </a>
-            ))}
-          </div>
+          {providers.length > 0 ? (
+            <div className="flex flex-wrap gap-3">
+              {providers.map((provider: any) => {
+                const urls: Record<string, string> = {
+                  "Netflix": `https://www.netflix.com/search?q=${encodeURIComponent(drama.name)}`,
+                  "Amazon Prime Video": `https://www.amazon.com/s?k=${encodeURIComponent(drama.name)}`,
+                  "Disney Plus": `https://www.disneyplus.com/search/${encodeURIComponent(drama.name)}`,
+                  "Viki": `https://www.viki.com/search?q=${encodeURIComponent(drama.name)}`,
+                  "iQIYI": `https://www.iq.com/search/${encodeURIComponent(drama.name)}`,
+                  "WeTV": `https://wetv.vip/search?query=${encodeURIComponent(drama.name)}`,
+                  "Viu": `https://www.viu.com/search?q=${encodeURIComponent(drama.name)}`,
+                  "Apple TV Plus": `https://tv.apple.com/search?term=${encodeURIComponent(drama.name)}`,
+                };
+                const url = urls[provider.provider_name] ||
+                  `https://www.google.com/search?q=watch+${encodeURIComponent(drama.name)}+on+${encodeURIComponent(provider.provider_name)}`;
+                return (
+                  <a key={provider.provider_id} href={url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition">
+                    {provider.logo_path && (
+                      <img src={`https://image.tmdb.org/t/p/w45${provider.logo_path}`}
+                        alt={provider.provider_name} className="w-5 h-5 rounded" />
+                    )}
+                    {provider.provider_name}
+                  </a>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-3">
+              {[
+                { name: "Netflix", color: "bg-red-600", url: `https://www.netflix.com/search?q=${encodeURIComponent(drama.name)}` },
+                { name: "Viki", color: "bg-blue-600", url: `https://www.viki.com/search?q=${encodeURIComponent(drama.name)}` },
+                { name: "WeTV", color: "bg-green-600", url: `https://wetv.vip/search?query=${encodeURIComponent(drama.name)}` },
+                { name: "iQIYI", color: "bg-green-700", url: `https://www.iq.com/search/${encodeURIComponent(drama.name)}` },
+                { name: "Viu", color: "bg-yellow-500", url: `https://www.viu.com/search?q=${encodeURIComponent(drama.name)}` },
+              ].map(platform => (
+                <a key={platform.name} href={platform.url} target="_blank" rel="noopener noreferrer"
+                  className={`${platform.color} text-white px-4 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition`}>
+                  {platform.name}
+                </a>
+              ))}
+            </div>
+          )}
           <p className="text-xs text-gray-400 mt-2">* Availability may vary by region</p>
         </div>
 

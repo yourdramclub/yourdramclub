@@ -1,0 +1,216 @@
+'use client';
+import { useEffect, useState } from "react";
+
+const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+const BASE_URL = "https://api.themoviedb.org/3";
+const IMG_URL = "https://image.tmdb.org/t/p/w500";
+
+export default function DramaBlogPage() {
+  const [drama, setDrama] = useState<any>(null);
+  const [cast, setCast] = useState<any[]>([]);
+  const [providers, setProviders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const id = window.location.pathname.split("/").pop();
+    if (!id) return;
+
+    Promise.all([
+      fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}`).then(r => r.json()),
+      fetch(`${BASE_URL}/tv/${id}/credits?api_key=${API_KEY}`).then(r => r.json()),
+      fetch(`${BASE_URL}/tv/${id}/watch/providers?api_key=${API_KEY}`).then(r => r.json()),
+    ]).then(([dramaData, creditsData, providersData]) => {
+      setDrama(dramaData);
+      setCast((creditsData.cast || []).slice(0, 5));
+      const providerData = providersData?.results;
+      const regionData = providerData?.US || providerData?.GB || providerData?.KR ||
+        providerData?.CN || providerData?.IN || Object.values(providerData || {})[0] || null;
+      setProviders((regionData as any)?.flatrate || []);
+      setLoading(false);
+      document.title = `Where to Watch ${dramaData.name} | YourDramaClub`;
+    });
+  }, []);
+
+  if (loading) return (
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-red-500"></div>
+    </main>
+  );
+
+  if (!drama) return null;
+
+  const country = drama.origin_country?.[0];
+  const isKdrama = country === "KR";
+  const isCdrama = country === "CN";
+  const dramaType = isKdrama ? "KDrama" : isCdrama ? "CDrama" : "Asian Drama";
+  const year = drama.first_air_date?.slice(0, 4);
+  const rating = drama.vote_average?.toFixed(1);
+  const genres = drama.genres?.map((g: any) => g.name).join(", ");
+  const castNames = cast.map((c: any) => c.name).join(", ");
+  const id = window.location.pathname.split("/").pop();
+
+  const fallbackPlatforms = isKdrama
+    ? ["Netflix", "Viki", "Viu", "Disney+"]
+    : ["iQIYI", "WeTV", "Viki", "Netflix"];
+
+  const platformUrls: Record<string, string> = {
+    "Netflix": `https://www.netflix.com/search?q=${encodeURIComponent(drama.name)}`,
+    "Viki": `https://www.viki.com/search?q=${encodeURIComponent(drama.name)}`,
+    "iQIYI": `https://www.iq.com/search/${encodeURIComponent(drama.name)}`,
+    "WeTV": `https://wetv.vip/search?query=${encodeURIComponent(drama.name)}`,
+    "Viu": `https://www.viu.com/search?q=${encodeURIComponent(drama.name)}`,
+    "Disney+": `https://www.disneyplus.com/search/${encodeURIComponent(drama.name)}`,
+    "Amazon Prime Video": `https://www.amazon.com/s?k=${encodeURIComponent(drama.name)}`,
+    "Apple TV Plus": `https://tv.apple.com/search?term=${encodeURIComponent(drama.name)}`,
+  };
+
+  const platformColors: Record<string, string> = {
+    "Netflix": "bg-red-600", "Viki": "bg-blue-600", "iQIYI": "bg-green-700",
+    "WeTV": "bg-green-500", "Viu": "bg-yellow-500", "Disney+": "bg-blue-800",
+    "Amazon Prime Video": "bg-blue-500", "Apple TV Plus": "bg-gray-900",
+  };
+
+  return (
+    <main className="min-h-screen bg-gray-50 text-gray-900">
+      <nav className="flex items-center justify-between px-4 sm:px-8 py-3 bg-white border-b border-gray-200 sticky top-0 z-50">
+        <a href="/" className="text-lg sm:text-2xl font-bold text-red-500">YourDramaClub</a>
+        <div className="hidden sm:flex gap-6 text-sm font-medium text-gray-600">
+          <a href="/KDrama" className="hover:text-red-500">KDrama</a>
+          <a href="/Cdrama" className="hover:text-red-500">CDrama</a>
+          <a href="/blog" className="hover:text-red-500">Blog</a>
+        </div>
+        <button className="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white">Sign In</button>
+      </nav>
+
+      <article className="px-4 sm:px-8 py-10 max-w-3xl mx-auto">
+        <a href="/blog" className="text-red-500 text-sm hover:text-red-600">← Back to Blog</a>
+
+        <div className="mt-4 mb-6">
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-600 mr-2">{dramaType}</span>
+          <span className="text-xs text-gray-400">{year}</span>
+          <h1 className="text-2xl sm:text-4xl font-bold mt-2 mb-3">
+            Where to Watch <span className="text-red-500">{drama.name}</span> — Complete Streaming Guide
+          </h1>
+          <p className="text-gray-500 text-sm">
+            Looking for where to watch <strong>{drama.name}</strong>? Here's everything you need to know about streaming this {dramaType} online.
+          </p>
+        </div>
+
+        {/* Poster + Quick Info */}
+        <div className="flex gap-4 bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-6">
+          {drama.poster_path && (
+            <img src={`${IMG_URL}${drama.poster_path}`} alt={drama.name}
+              className="w-24 sm:w-36 rounded-xl flex-shrink-0" />
+          )}
+          <div className="flex-1">
+            <h2 className="font-bold text-lg">{drama.name}</h2>
+            {drama.original_name !== drama.name && (
+              <p className="text-gray-400 text-sm">{drama.original_name}</p>
+            )}
+            <div className="mt-2 space-y-1 text-sm text-gray-600">
+              <p>⭐ <strong>{rating}</strong> / 10 on TMDb</p>
+              {drama.number_of_episodes && <p>🎬 <strong>{drama.number_of_episodes}</strong> Episodes</p>}
+              {year && <p>📅 First aired: <strong>{year}</strong></p>}
+              {genres && <p>🎭 Genres: <strong>{genres}</strong></p>}
+              {castNames && <p>👥 Stars: <strong>{castNames}</strong></p>}
+            </div>
+            <a href={`/drama/${id}`}
+              className="inline-block mt-3 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm font-semibold transition">
+              View Full Details →
+            </a>
+          </div>
+        </div>
+
+        {/* Synopsis */}
+        {drama.overview && (
+          <div className="mb-6">
+            <h2 className="text-xl font-bold mb-2">What is <span className="text-red-500">{drama.name}</span> About?</h2>
+            <p className="text-gray-600 leading-relaxed">{drama.overview}</p>
+          </div>
+        )}
+
+        {/* Where to Watch */}
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-3">
+            Watch <span className="text-red-500">{drama.name}</span> Online
+          </h2>
+          {providers.length > 0 ? (
+            <>
+              <p className="text-gray-600 text-sm mb-4">
+                <strong>{drama.name}</strong> is available on these streaming platforms:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {providers.map((provider: any) => {
+                  const url = platformUrls[provider.provider_name] ||
+                    `https://www.google.com/search?q=watch+${encodeURIComponent(drama.name)}+on+${encodeURIComponent(provider.provider_name)}`;
+                  return (
+                    <a key={provider.provider_id} href={url} target="_blank" rel="noopener noreferrer"
+                      className="bg-gray-900 text-white px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 hover:bg-gray-700 transition">
+                      {provider.logo_path && (
+                        <img src={`https://image.tmdb.org/t/p/w45${provider.logo_path}`}
+                          alt={provider.provider_name} className="w-8 h-8 rounded-lg" />
+                      )}
+                      <span>Watch on {provider.provider_name}</span>
+                      <span className="ml-auto">→</span>
+                    </a>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-600 text-sm mb-4">
+                Try searching <strong>{drama.name}</strong> on these popular platforms:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {fallbackPlatforms.map((platform) => (
+                  <a key={platform} href={platformUrls[platform]} target="_blank" rel="noopener noreferrer"
+                    className={`${platformColors[platform]} text-white px-4 py-3 rounded-xl text-sm font-semibold flex items-center justify-between hover:opacity-90 transition`}>
+                    <span>Search on {platform}</span>
+                    <span>→</span>
+                  </a>
+                ))}
+              </div>
+            </>
+          )}
+          <p className="text-xs text-gray-400 mt-2">* Availability varies by country and region.</p>
+        </div>
+
+        {/* Rating */}
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-2">Is <span className="text-red-500">{drama.name}</span> Worth Watching?</h2>
+          <p className="text-gray-600 leading-relaxed mb-4">
+            With a TMDb rating of <strong>{rating}/10</strong>, {drama.name} is{" "}
+            {parseFloat(rating) >= 8 ? "highly rated and definitely worth your time." :
+             parseFloat(rating) >= 7 ? "well received by drama fans and worth checking out." :
+             "a decent watch for fans of the genre."}{" "}
+            {genres && `If you enjoy ${genres} dramas, this one is a great pick.`}
+          </p>
+          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="text-3xl font-bold text-yellow-500">{rating}</div>
+              <div>
+                <p className="text-sm font-semibold">TMDb Rating</p>
+                <p className="text-xs text-gray-400">{drama.vote_count?.toLocaleString()} user votes</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="bg-red-50 border border-red-100 rounded-xl p-5 text-center">
+          <h3 className="font-bold text-lg mb-2">Want More Details?</h3>
+          <p className="text-gray-600 text-sm mb-4">View the full cast, trailer, episodes, and similar dramas.</p>
+          <a href={`/drama/${id}`}
+            className="inline-block bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-semibold transition">
+            View <span className="font-bold">{drama.name}</span> Full Page →
+          </a>
+        </div>
+      </article>
+
+      <footer className="px-4 sm:px-8 py-8 border-t border-gray-200 text-center text-gray-400 text-xs mt-10">
+        © 2025 YourDramaClub · Built with ❤️ for drama lovers
+      </footer>
+    </main>
+  );
+}
