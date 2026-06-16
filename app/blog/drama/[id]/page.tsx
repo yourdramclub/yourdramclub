@@ -6,12 +6,14 @@ const IMG_URL = "https://image.tmdb.org/t/p/w500";
 
 async function getDramaData(id: string) {
   try {
-    const [drama, credits, providers] = await Promise.all([
+    const [drama, credits, providers, similar, reviews] = await Promise.all([
       fetch(`${BASE_URL}/tv/${id}?api_key=${API_KEY}`, { next: { revalidate: 3600 } }).then(r => r.json()),
       fetch(`${BASE_URL}/tv/${id}/credits?api_key=${API_KEY}`, { next: { revalidate: 3600 } }).then(r => r.json()),
       fetch(`${BASE_URL}/tv/${id}/watch/providers?api_key=${API_KEY}`, { next: { revalidate: 3600 } }).then(r => r.json()),
+      fetch(`${BASE_URL}/tv/${id}/similar?api_key=${API_KEY}`, { next: { revalidate: 3600 } }).then(r => r.json()),
+      fetch(`${BASE_URL}/tv/${id}/reviews?api_key=${API_KEY}`, { next: { revalidate: 3600 } }).then(r => r.json()),
     ]);
-    return { drama, credits, providers };
+    return { drama, credits, providers, similar, reviews };
   } catch {
     return null;
   }
@@ -35,7 +37,11 @@ export default async function DramaBlogPage({ params }: { params: Promise<{ id: 
 
   if (!data?.drama || data.drama.success === false) return notFound();
 
-  const { drama, credits, providers } = data;
+  const { drama, credits, providers, similar, reviews } = data;
+  const similarDramas = (similar?.results || []).filter((s: any) => s.poster_path).slice(0, 6);
+  const networkName = drama.networks?.[0]?.name;
+  const productionCountry = drama.production_countries?.[0]?.name;
+  const creators = drama.created_by?.map((c: any) => c.name).join(", ");
   const cast = (credits.cast || []).slice(0, 5);
   const castNames = cast.map((c: any) => c.name).join(", ");
 
@@ -134,6 +140,45 @@ export default async function DramaBlogPage({ params }: { params: Promise<{ id: 
           </div>
         )}
 
+        {/* Production Details */}
+        <div className="mb-6 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <h2 className="font-bold text-lg mb-3">Production Details</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+            {networkName && (
+              <div>
+                <p className="text-gray-400 text-xs">Network</p>
+                <p className="font-medium">{networkName}</p>
+              </div>
+            )}
+            {productionCountry && (
+              <div>
+                <p className="text-gray-400 text-xs">Country</p>
+                <p className="font-medium">{productionCountry}</p>
+              </div>
+            )}
+            {creators && (
+              <div>
+                <p className="text-gray-400 text-xs">Created By</p>
+                <p className="font-medium">{creators}</p>
+              </div>
+            )}
+            {drama.episode_run_time?.[0] && (
+              <div>
+                <p className="text-gray-400 text-xs">Episode Length</p>
+                <p className="font-medium">~{drama.episode_run_time[0]} min</p>
+              </div>
+            )}
+            <div>
+              <p className="text-gray-400 text-xs">Language</p>
+              <p className="font-medium">{drama.original_language === "ko" ? "Korean" : drama.original_language === "zh" ? "Mandarin" : drama.original_language?.toUpperCase()}</p>
+            </div>
+            <div>
+              <p className="text-gray-400 text-xs">Status</p>
+              <p className="font-medium">{drama.status}</p>
+            </div>
+          </div>
+        </div>
+
         {/* Where to Watch */}
         <div className="mb-6">
           <h2 className="text-xl font-bold mb-3">
@@ -206,17 +251,40 @@ export default async function DramaBlogPage({ params }: { params: Promise<{ id: 
 
         {/* Cast */}
         {cast.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-xl font-bold mb-3">Main Cast</h2>
-            <div className="flex gap-3 flex-wrap">
+          <div className="mb-6 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <h2 className="font-bold text-lg mb-3">Main Cast & Characters</h2>
+            <div className="space-y-3">
               {cast.map((member: any) => (
                 <a key={member.id} href={`/actor/${member.id}`}
-                  className="flex flex-col items-center w-16 text-center hover:opacity-80 transition">
-                  {member.profile_path && (
+                  className="flex items-center gap-3 hover:bg-gray-50 rounded-lg p-2 transition -mx-2">
+                  {member.profile_path ? (
                     <img src={`https://image.tmdb.org/t/p/w185${member.profile_path}`}
-                      alt={member.name} className="w-14 h-14 rounded-full object-cover border-2 border-gray-100" />
+                      alt={member.name} className="w-12 h-12 rounded-full object-cover border-2 border-gray-100 flex-shrink-0" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0" />
                   )}
-                  <p className="text-[10px] font-medium mt-1 truncate w-full">{member.name}</p>
+                  <div>
+                    <p className="text-sm font-semibold">{member.name}</p>
+                    {member.character && <p className="text-xs text-gray-400">as {member.character}</p>}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Similar Dramas */}
+        {similarDramas.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-xl font-bold mb-3">
+              If You Like <span className="text-red-500">{drama.name}</span>, Try These
+            </h2>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+              {similarDramas.map((s: any) => (
+                <a key={s.id} href={`/drama/${s.id}`} className="block">
+                  <img src={`${IMG_URL}${s.poster_path}`} alt={s.name}
+                    className="w-full aspect-[2/3] object-cover rounded-lg" />
+                  <p className="text-[10px] font-medium mt-1 truncate">{s.name}</p>
                 </a>
               ))}
             </div>
