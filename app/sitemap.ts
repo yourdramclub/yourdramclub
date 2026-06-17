@@ -17,18 +17,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/blog/kdramas-like-squid-game`, lastModified: new Date(), priority: 0.8 },
   ];
 
-  const [krRes, cnRes, kr2Res, cn2Res] = await Promise.all([
-    fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=KR&sort_by=popularity.desc&page=1&with_original_language=ko&without_genres=16`).then(r => r.json()),
-    fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=CN&sort_by=popularity.desc&page=1&with_original_language=zh&without_genres=16`).then(r => r.json()),
-    fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=KR&sort_by=popularity.desc&page=2&with_original_language=ko&without_genres=16`).then(r => r.json()),
-    fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=CN&sort_by=popularity.desc&page=2&with_original_language=zh&without_genres=16`).then(r => r.json()),
+  const pages = [1, 2, 3, 4, 5, 6];
+  const krFetches = pages.map(p =>
+    fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=KR&sort_by=popularity.desc&page=${p}&with_original_language=ko&without_genres=16`).then(r => r.json())
+  );
+  const cnFetches = pages.map(p =>
+    fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&with_origin_country=CN&sort_by=popularity.desc&page=${p}&with_original_language=zh&without_genres=16,10762`).then(r => r.json())
+  );
+
+  const [krResults, cnResults] = await Promise.all([
+    Promise.all(krFetches),
+    Promise.all(cnFetches),
   ]);
 
   const allDramas = [
-    ...(krRes.results || []),
-    ...(cnRes.results || []),
-    ...(kr2Res.results || []),
-    ...(cn2Res.results || []),
+    ...krResults.flatMap(r => r.results || []),
+    ...cnResults.flatMap(r => r.results || []),
   ];
 
   const dramaPages = allDramas.map((drama: any) => ({
