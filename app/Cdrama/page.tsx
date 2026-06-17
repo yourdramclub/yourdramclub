@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
@@ -35,10 +36,7 @@ export default function CDramaPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900">
-      <nav className="flex items-center justify-between px-4 sm:px-8 py-3 bg-white border-b border-gray-200 sticky top-0 z-50">
-        <a href="/" className="text-lg sm:text-2xl font-bold text-red-500">YourDramaClub</a>
-        <button className="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white">Sign In</button>
-      </nav>
+      <Navbar />
 
       <div className="px-4 sm:px-8 py-6">
         <h1 className="text-2xl sm:text-4xl font-bold mb-6">🇨🇳 All CDramas</h1>
