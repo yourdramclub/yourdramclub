@@ -1,5 +1,6 @@
 import { blogPosts } from "../../blogData";
 import { notFound } from "next/navigation";
+import Navbar from "../../components/Navbar";
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
@@ -37,15 +38,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900">
-      <nav className="flex items-center justify-between px-4 sm:px-8 py-3 sm:py-4 bg-white border-b border-gray-200 sticky top-0 z-50">
-        <a href="/" className="text-xl sm:text-2xl font-bold text-red-500">YourDramaClub</a>
-        <div className="hidden sm:flex gap-6 text-sm font-medium text-gray-600">
-          <a href="/KDrama" className="hover:text-red-500 transition">KDrama</a>
-          <a href="/Cdrama" className="hover:text-red-500 transition">CDrama</a>
-          <a href="/blog" className="text-red-500 font-semibold">Blog</a>
-        </div>
-        <button className="bg-red-500 hover:bg-red-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white transition">Sign In</button>
-      </nav>
+      <Navbar />
 
       <article className="px-4 sm:px-8 py-10 max-w-3xl mx-auto">
         <a href="/blog" className="text-red-500 text-sm hover:text-red-600">← Back to Blog</a>

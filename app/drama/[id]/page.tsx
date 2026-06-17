@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from "react";
+import Navbar from "../../components/Navbar";
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const IMG_URL = "https://image.tmdb.org/t/p/w500";
@@ -82,15 +83,7 @@ export default function DramaDetailPage() {
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900">
       {/* Navbar */}
-      <nav className="flex items-center justify-between px-4 sm:px-8 py-3 bg-white border-b border-gray-200 sticky top-0 z-50">
-        <a href="/" className="text-lg sm:text-2xl font-bold text-red-500">YourDramaClub</a>
-        <div className="hidden sm:flex gap-6 text-sm font-medium text-gray-600">
-          <a href="/KDrama" className="hover:text-red-500">KDrama</a>
-          <a href="/Cdrama" className="hover:text-red-500">CDrama</a>
-          <a href="/blog" className="hover:text-red-500">Blog</a>
-        </div>
-        <button className="bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white">Sign In</button>
-      </nav>
+      <Navbar />
 
       {/* Hero Backdrop */}
       {drama.backdrop_path && (
