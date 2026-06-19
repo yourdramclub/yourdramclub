@@ -22,8 +22,14 @@ export default function ActorPage() {
       fetch(`${BASE_URL}/person/${actorId}/tv_credits?api_key=${API_KEY}`).then(r => r.json()),
     ]).then(([personData, creditsData]) => {
       setActor(personData);
+      const excludedGenres = [10764, 10763, 10767, 10766]; // Reality, News, Talk, Soap
       const sorted = (creditsData.cast || [])
-        .filter((show: any) => show.poster_path && show.vote_average > 0)
+        .filter((show: any) =>
+          show.poster_path &&
+          show.vote_average > 0 &&
+          show.vote_count >= 5 &&
+          !show.genre_ids?.some((g: number) => excludedGenres.includes(g))
+        )
         .sort((a: any, b: any) => b.vote_average - a.vote_average)
         .slice(0, 20);
       setDramas(sorted);
