@@ -13,6 +13,7 @@ export default function Navbar() {
         <a href="/Cdrama" className="hover:text-red-500">CDrama</a>
         <a href="/coming-soon" className="hover:text-red-500">Coming Soon</a>
         <a href="/blog" className="hover:text-red-500">Blog</a>
+        <a href="/watchlist" className="hover:text-red-500">❤️ Watchlist</a>
       </div>
 
       <div className="flex items-center gap-2">

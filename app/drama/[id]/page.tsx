@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
+import WatchlistButton from "../../components/WatchlistButton";
 
 const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const IMG_URL = "https://image.tmdb.org/t/p/w500";
@@ -156,6 +157,7 @@ export default function DramaDetailPage() {
 
             {/* Buttons */}
             <div className="flex gap-2 flex-wrap">
+              <WatchlistButton drama={{ id: drama.id, name: drama.name, poster_path: drama.poster_path, vote_average: drama.vote_average }} />
               {trailer && (
                 <button onClick={() => setShowTrailer(true)}
                   className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition">
